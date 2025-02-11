@@ -1,0 +1,61 @@
+{% extends 'admin_index.html' %}
+{% block content %}
+<h2>Waste Requests for Ward {{ ward.ward_number }} - {{ ward.location }}</h2>
+
+{% if waste_submissions %}
+    <table border="1">
+        <tr>
+            <th>User</th>
+            <th>Place</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Waste Categories</th>
+            <th>Kg</th>
+            <th>Action</th>
+        </tr>
+        {% for submission in waste_submissions %}
+            <tr>
+                <td>{{ submission.user.name }}</td>
+                <td>{{ submission.user.place }}</td>
+                <td>{{ submission.user.address }}</td>
+                <td>{{ submission.user.phone }}</td>
+                <td>{{ submission.date }}</td>
+                <td>{{ submission.time }}</td>
+
+                <td>
+                    {% for detail in waste_submission_details %}
+                        {% if detail.waste_submission == submission %}
+                            {{ detail.category.name }}<br>
+                        {% endif %}
+                    {% empty %}
+                        No categories
+                    {% endfor %}
+                </td>
+
+                <td>
+                    {% for detail in waste_submission_details %}
+                        {% if detail.waste_submission == submission %}
+                            {{ detail.kilogram }} kg<br>
+                        {% endif %}
+                    {% empty %}
+                        No weight
+                    {% endfor %}
+                </td>
+
+                <td>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        <button type="submit">Allocate</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No requests found for this ward.</p>
+{% endif %}
+
+<a href="{% url 'ward_requests' %}">Back to Wards</a>
+{% endblock %}
