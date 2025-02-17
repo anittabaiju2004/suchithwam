@@ -8,9 +8,7 @@ class tbl_admin(models.Model):
         return self.email
 
 
-
-from django.db import models
-from django.db import models
+from decimal import Decimal
 
 class tbl_category(models.Model):
     name = models.TextField()

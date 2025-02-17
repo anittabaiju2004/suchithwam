@@ -13,15 +13,15 @@ class CategorySerializer(serializers.ModelSerializer):
         model = tbl_category
         fields = ['id', 'name', 'image','price']
 
-from datetime import datetime
+# from datetime import datetime
 
-from rest_framework import serializers
-from userapp.models import WasteSubmissionDetail,WasteSubmission
+# from rest_framework import serializers
+# from userapp.models import WasteSubmissionDetail,WasteSubmission
 
-class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WasteSubmissionDetail
-        fields = ['category', 'kilogram']
+# class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = WasteSubmissionDetail
+#         fields = ['category', 'kilogram']
 
 # class WasteSubmissionSerializer(serializers.ModelSerializer):
 #     details = WasteSubmissionDetailSerializer(many=True)
@@ -83,47 +83,47 @@ class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
 #             WasteSubmissionDetail.objects.create(waste_submission=waste_submission, **detail)
 #         return waste_submission
 
-from datetime import datetime
-from rest_framework import serializers
-from userapp.models import WasteSubmission, WasteSubmissionDetail, tbl_register
+# from datetime import datetime
+# from rest_framework import serializers
+# from userapp.models import WasteSubmission, WasteSubmissionDetail, tbl_register
 
-class WasteSubmissionSerializer(serializers.ModelSerializer):
-    details = WasteSubmissionDetailSerializer(many=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
-    total_price = serializers.SerializerMethodField()  # Corrected to use a method field
+# class WasteSubmissionSerializer(serializers.ModelSerializer):
+#     details = WasteSubmissionDetailSerializer(many=True)
+#     user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
+#     total_price = serializers.SerializerMethodField()  # Corrected to use a method field
 
-    # Customizing the time format for display
-    time = serializers.TimeField(format="%H:%M:%S")
+#     # Customizing the time format for display
+#     time = serializers.TimeField(format="%H:%M:%S")
 
-    class Meta:
-        model = WasteSubmission
-        fields = "__all__"
+#     class Meta:
+#         model = WasteSubmission
+#         fields = "__all__"
 
-    def get_total_price(self, obj):
-        """Calculate and return the total price dynamically."""
-        return obj.total_price()
+#     def get_total_price(self, obj):
+#         """Calculate and return the total price dynamically."""
+#         return obj.total_price()
 
-    def to_internal_value(self, data):
-        """
-        Override the default method to parse the date in DD-MM-YYYY format 
-        and time in hh:mm[:ss[.uuuuuu]] format.
-        """
-        if 'date' in data:
-            try:
-                date = datetime.strptime(data['date'], "%d-%m-%Y").date()
-                data['date'] = date
-            except ValueError:
-                raise serializers.ValidationError({"date": "Date has wrong format. Use DD-MM-YYYY."})
+#     def to_internal_value(self, data):
+#         """
+#         Override the default method to parse the date in DD-MM-YYYY format 
+#         and time in hh:mm[:ss[.uuuuuu]] format.
+#         """
+#         if 'date' in data:
+#             try:
+#                 date = datetime.strptime(data['date'], "%d-%m-%Y").date()
+#                 data['date'] = date
+#             except ValueError:
+#                 raise serializers.ValidationError({"date": "Date has wrong format. Use DD-MM-YYYY."})
 
-        if 'time' in data:
-            try:
-                # Parsing time in hh:mm[:ss[.uuuuuu]] format
-                time = datetime.strptime(data['time'], "%H:%M:%S.%f" if '.' in data['time'] else "%H:%M:%S").time()
-                data['time'] = time
-            except ValueError:
-                raise serializers.ValidationError({"time": "Time has wrong format. Use hh:mm[:ss[.uuuuuu]]."})
+#         if 'time' in data:
+#             try:
+#                 # Parsing time in hh:mm[:ss[.uuuuuu]] format
+#                 time = datetime.strptime(data['time'], "%H:%M:%S.%f" if '.' in data['time'] else "%H:%M:%S").time()
+#                 data['time'] = time
+#             except ValueError:
+#                 raise serializers.ValidationError({"time": "Time has wrong format. Use hh:mm[:ss[.uuuuuu]]."})
 
-        return super().to_internal_value(data)
+#         return super().to_internal_value(data)
 
 from rest_framework import serializers
 from adminapp.models import Ward
@@ -160,3 +160,45 @@ class PaymentSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError({field: f"{field} is required for card payment."})
 
         return data
+
+
+
+
+
+from rest_framework import serializers
+from userapp.models import WasteSubmission, WasteSubmissionDetail, tbl_register
+from adminapp.models import tbl_category
+
+class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WasteSubmissionDetail
+        fields = ['category', 'kilogram']
+
+class WasteSubmissionSerializer(serializers.ModelSerializer):
+    details = WasteSubmissionDetailSerializer(many=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
+    total_price = serializers.SerializerMethodField()
+
+    date = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y"])
+    time = serializers.TimeField(format="%H:%M:%S.%f", input_formats=["%H:%M:%S", "%H:%M:%S.%f"])
+
+    class Meta:
+        model = WasteSubmission
+        fields = "__all__"
+
+    def get_total_price(self, obj):
+        return obj.total_price()
+
+    def create(self, validated_data):
+        details_data = validated_data.pop('details', [])
+        waste_submission = WasteSubmission.objects.create(**validated_data)
+
+        for detail in details_data:
+            category = detail['category']
+            WasteSubmissionDetail.objects.create(
+                waste_submission=waste_submission,
+                category=category,
+                kilogram=detail['kilogram']
+            )
+
+        return waste_submission

@@ -40,6 +40,11 @@ from userapp.models import tbl_register
 
 #     def __str__(self):
 #         return f"{self.user.name} - {self.date} ({self.get_status_display()})"
+
+
+
+    
+from decimal import Decimal
 class WasteSubmission(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -47,31 +52,39 @@ class WasteSubmission(models.Model):
         ('incomplete', 'Incomplete'),
     ]
 
-    user = models.ForeignKey(tbl_register, on_delete=models.CASCADE)
+    user = models.ForeignKey('tbl_register', on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def total_price(self):
-        total = 0
-        for detail in self.details.all():  # 'details' is the related name
-            total += detail.calculate_price()  # Use the method in WasteSubmissionDetail
+        # Sum the price of each category detail in the submission
+        total = Decimal(0)  # Use Decimal for precision
+        for detail in self.details.all():
+            total += detail.calculate_price()  # Add the price of each category for each detail
         return total
 
     def __str__(self):
         return f"{self.user.name} - {self.date} ({self.get_status_display()})"
 
-
+from decimal import Decimal
 class WasteSubmissionDetail(models.Model):
     waste_submission = models.ForeignKey(WasteSubmission, related_name='details', on_delete=models.CASCADE)
-    category = models.ForeignKey(tbl_category, on_delete=models.CASCADE)
+    category = models.ForeignKey('adminapp.tbl_category', on_delete=models.CASCADE)
     kilogram = models.FloatField()
 
     def calculate_price(self):
-        return self.category.price * self.kilogram
+        # Return the price of the current category for this detail, no summing with other categories
+        return self.category.price
 
     def __str__(self):
         return f"{self.category.name} - {self.kilogram} kg"
+    
+
+
+
+import uuid
+from decimal import Decimal
 
 class Payment(models.Model):
     PAYMENT_OPTIONS = [
@@ -99,14 +112,19 @@ class Payment(models.Model):
     cardholder_name = models.CharField(max_length=100, null=True, blank=True)
 
     def save(self, *args, **kwargs):
+        # Set the price based on the total price of the associated waste submission
         if not self.price:
-            self.price = sum(detail.calculate_price() for detail in self.waste_submission.details.all())
+            self.price = self.waste_submission.total_price()  # Using the total_price method from WasteSubmission
+        
+        # Handle card payment details
         if self.payment_option == 'card_payment' and not self.transaction_id:
-            self.transaction_id = str(uuid.uuid4())
+            self.transaction_id = str(uuid.uuid4())  # Generate a transaction ID if not provided
+
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.name} - {self.payment_option} - {self.status}"
+
  
 
 

@@ -161,10 +161,10 @@ def ward_requests(request):
 
 from django.shortcuts import render, get_object_or_404
 from .models import Ward
-from userapp.models import WasteSubmission, WasteSubmissionDetail
+# from userapp.models import WasteSubmissionDetail
 from django.shortcuts import render, get_object_or_404
 from .models import Ward
-from userapp.models import WasteSubmission, WasteSubmissionDetail
+# from userapp.models import WasteSubmission, WasteSubmissionDetail
 
 def ward_request_details(request, ward_id):
     """Displays the waste submissions for a specific ward."""
