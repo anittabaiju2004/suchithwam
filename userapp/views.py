@@ -127,17 +127,17 @@ from .models import WasteSubmission
 from .serializers import WasteSubmissionSerializer
 from userapp.models import tbl_register
 
-class WasteSubmissionViewSet(viewsets.ModelViewSet):
-    queryset = WasteSubmission.objects.all()
-    serializer_class = WasteSubmissionSerializer
-    http_method_names = ['get', 'post']
+# class WasteSubmissionViewSet(viewsets.ModelViewSet):
+#     queryset = WasteSubmission.objects.all()
+#     serializer_class = WasteSubmissionSerializer
+#     http_method_names = ['get', 'post']
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
 from rest_framework import generics
@@ -200,12 +200,85 @@ class UserProfileUpdateView(generics.UpdateAPIView):
     queryset = tbl_register.objects.all()
     serializer_class = userregisterSerializer
     lookup_field = 'id'  # Fetch user by ID
+
+
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from userapp.models import Payment
 from userapp.serializers import PaymentSerializer
 
+
+# class MakePaymentView(APIView):
+#     def post(self, request):
+#         serializer = PaymentSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"message": "Payment successful", "data": serializer.data}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from userapp.models import WasteSubmission, Payment
+
+class WasteOverviewView(APIView):
+    def get(self, request, user_id):
+        waste_submissions = WasteSubmission.objects.filter(user_id=user_id)
+        data = []
+
+        for waste_submission in waste_submissions:
+            payment_status = Payment.objects.filter(waste=waste_submission).first().status if Payment.objects.filter(waste=waste_submission).exists() else "Not Paid"
+            data.append({
+                "waste_id": waste_submission.id,
+                "date": waste_submission.date,
+                "time": waste_submission.time,
+                "status": waste_submission.get_status_display(),
+                "payment_status": payment_status
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from userapp.models import WasteSubmission, Payment
+from userapp.serializers import WasteSubmissionSerializer, PaymentSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from userapp.models import WasteSubmission, Payment
+from userapp.serializers import WasteSubmissionSerializer, PaymentSerializer
+
+class WastePaymentDetailView(APIView):
+    def get(self, request, user_id):
+        waste_submissions = WasteSubmission.objects.filter(user_id=user_id)
+        data = []
+
+        for waste_submission in waste_submissions:
+            waste_data = WasteSubmissionSerializer(waste_submission).data
+            payment = Payment.objects.filter(waste=waste_submission).first()
+            payment_data = PaymentSerializer(payment).data if payment else None
+            data.append({
+                "waste_submission": waste_data,
+                "payment_details": payment_data
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+
+class WasteSubmissionViewSet(viewsets.ModelViewSet):
+    queryset = WasteSubmission.objects.all()
+    serializer_class = WasteSubmissionSerializer
+    http_method_names = ['get', 'post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MakePaymentView(APIView):
     def post(self, request):

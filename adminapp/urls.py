@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views 
+from adminapp.views import *
 urlpatterns = [
     path('admin_index/', views.admin_index, name='admin_index'), 
     path('',views.admin_login,name='admin_login'),
@@ -14,4 +15,8 @@ urlpatterns = [
      path('ward/delete/<int:ward_id>/', views.delete_ward, name='delete_ward'),
    path("requests/", views.ward_requests, name="ward_requests"),
     path("requests/<int:ward_id>/", views.ward_request_details, name="ward_request_details"),
+     path("register/", views.register_employee, name="register_employee"),
+      path("employees/", list_employees, name="list_employees"),
+    path("employees/edit/<int:employee_id>/", edit_employee, name="edit_employee"),
+    path("employees/delete/<int:employee_id>/", delete_employee, name="delete_employee"),
 ]

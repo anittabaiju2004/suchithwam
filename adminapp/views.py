@@ -36,7 +36,7 @@ def admin_login(request):
 
 
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import tbl_category
 
@@ -44,9 +44,10 @@ def add_category(request):
     if request.method == "POST":
         category_name = request.POST.get("categoryName")
         category_image = request.FILES.get("categoryImage")
+        category_price = request.POST.get("categoryPrice")
 
-        if category_name and category_image:
-            tbl_category.objects.create(name=category_name, image=category_image)
+        if category_name and category_image and category_price:
+            tbl_category.objects.create(name=category_name, image=category_image, price=category_price)
             messages.success(request, "Category added successfully!")
             return redirect("add_category")
         else:
@@ -54,30 +55,24 @@ def add_category(request):
 
     return render(request, "add_category.html")
 
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import tbl_category
-
 def list_categories(request):
     categories = tbl_category.objects.all()
     return render(request, 'categories_list.html', {'categories': categories})
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import tbl_category
 
 def edit_category(request, category_id):
     category = get_object_or_404(tbl_category, id=category_id)
     
     if request.method == 'POST':
         category.name = request.POST.get('categoryName')
+        category.price = request.POST.get('categoryPrice')
         
         if 'categoryImage' in request.FILES:
             category.image = request.FILES['categoryImage']
         
         category.save()
-        return redirect('list_categories')  # Ensure 'list_categories' is a valid URL name
+        return redirect('list_categories')
     
     return render(request, 'edit_category.html', {'category': category})
-
 
 def delete_category(request, category_id):
     category = get_object_or_404(tbl_category, id=category_id)
@@ -162,6 +157,8 @@ def ward_requests(request):
     """Displays the list of wards."""
     wards = Ward.objects.all().order_by("ward_number")
     return render(request, "ward_requests.html", {"wards": wards})
+
+
 from django.shortcuts import render, get_object_or_404
 from .models import Ward
 from userapp.models import WasteSubmission, WasteSubmissionDetail
@@ -184,3 +181,97 @@ def ward_request_details(request, ward_id):
         "waste_submissions": waste_submissions,
         "waste_submission_details": waste_submission_details,
     })
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Employee, Ward
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Employee, Ward
+
+def register_employee(request):
+    if request.method == "POST":
+        employee_id = request.POST.get("employee_id")
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        password = request.POST.get("password")  # Storing password as plain text
+        image = request.FILES.get("image")
+        a_image = request.FILES.get("a_image")
+        ward_ids = request.POST.getlist("ward")  # Get multiple selected ward IDs
+
+        if not image or not a_image:
+            messages.error(request, "Both Employee Image and Aadhar Image are required!")
+        elif Employee.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists!")
+        else:
+            # Get the selected wards from the database
+            wards = Ward.objects.filter(id__in=ward_ids)
+            
+            employee = Employee.objects.create(
+                employee_id=employee_id,
+                name=name,
+                email=email,
+                phone=phone,
+                password=password,  # Stored as plain text
+                image=image,
+                a_image=a_image,
+            )
+            # Add the selected wards to the employee
+            employee.ward.set(wards)
+            employee.save()
+
+            messages.success(request, "Employee registered successfully!")
+            return redirect("register_employee")
+
+    wards = Ward.objects.all()
+    return render(request, "register_employee.html", {"wards": wards})
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Employee, Ward
+
+def list_employees(request):
+    employees = Employee.objects.all()
+    return render(request, "list_employees.html", {"employees": employees})
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Employee, Ward
+
+def edit_employee(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    wards = Ward.objects.all()
+
+    if request.method == "POST":
+        employee.employee_id = request.POST.get("employee_id")
+        employee.name = request.POST.get("name")
+        employee.email = request.POST.get("email")
+        employee.phone = request.POST.get("phone")
+        employee.password = request.POST.get("password")  # No hashing
+
+        # Handling file uploads
+        if "image" in request.FILES:
+            employee.image = request.FILES["image"]
+        if "a_image" in request.FILES:
+            employee.a_image = request.FILES["a_image"]
+        
+        # Handle multiple selected wards
+        ward_ids = request.POST.getlist("ward")  # Get multiple selected ward IDs
+        wards_selected = Ward.objects.filter(id__in=ward_ids)
+
+        employee.save()
+        employee.ward.set(wards_selected)  # Save multiple wards
+        employee.save()
+
+        messages.success(request, "Employee details updated successfully!")
+        return redirect("list_employees")
+
+    return render(request, "edit_employee.html", {"employee": employee, "wards": wards})
+
+def delete_employee(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    employee.delete()
+    messages.success(request, "Employee deleted successfully!")
+    return redirect("list_employees")

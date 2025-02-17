@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {% load static %}
     <meta charset="UTF-8">
@@ -183,7 +184,8 @@
             margin-top: 20px;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
@@ -199,6 +201,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="dashboard">
         <!-- Sidebar -->
@@ -206,7 +209,7 @@
             <div class="logo">Admin Panel</div>
             <ul class="nav">
                 <li><a href="{% url 'admin_index' %}" class="active">Home</a></li>
-    
+
                 <li class="dropdown">
                     <a href="#">Category <span class="arrow">&#9660;</span></a>
                     <ul class="dropdown-menu">
@@ -214,7 +217,7 @@
                         <li><a href="{% url 'list_categories' %}">List</a></li>
                     </ul>
                 </li>
-    
+
                 <li class="dropdown">
                     <a href="#">Wards <span class="arrow">&#9660;</span></a>
                     <ul class="dropdown-menu">
@@ -223,12 +226,14 @@
                     </ul>
                 </li>
                 <li><a href="{% url 'ward_requests' %}">Requests</a></li>
+                <li><a href="{% url 'list_employees' %}">List Employees</a></li>
 
+                <li><a href="{% url 'register_employee' %}">Register Employee</a></li>
                 <li><a href="{% url 'admin_logout' %}">Logout</a></li>
             </ul>
         </div>
-    
-    
+
+
         <!-- Main Content -->
         <div class="main-content">
             <header>
@@ -303,15 +308,16 @@
 
     <script>
         // Add event listener to handle dropdown toggle
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const dropdowns = document.querySelectorAll('.dropdown');
 
             dropdowns.forEach(dropdown => {
-                dropdown.addEventListener('click', function() {
+                dropdown.addEventListener('click', function () {
                     this.classList.toggle('active');
                 });
             });
         });
     </script>
 </body>
+
 </html>

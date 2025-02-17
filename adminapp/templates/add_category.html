@@ -1,4 +1,3 @@
-<!-- add_category.html -->
 {% extends 'admin_index.html' %}
 
 {% block content %}
@@ -15,10 +14,12 @@
             <label for="categoryImage">Category Image:</label>
             <input type="file" id="categoryImage" name="categoryImage" accept="image/*" required><br><br>
         
+            <label for="categoryPrice">Category Price:</label>
+            <input type="number" id="categoryPrice" name="categoryPrice" step="0.01" required><br><br>
+        
             <input type="submit" value="Add Category">
         </form>
         
-        <!-- Show messages -->
         {% if messages %}
             <ul class="message-list">
                 {% for message in messages %}
@@ -28,3 +29,4 @@
         {% endif %}
     </div>
 {% endblock %}
+

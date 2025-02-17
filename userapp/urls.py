@@ -58,7 +58,8 @@ urlpatterns = [
     path('profile/<int:id>/', UserProfileView.as_view(), name='user_profile'),
     path('profile/update/<int:id>/', UserProfileUpdateView.as_view(), name='update_user_profile'),
     path('make_payment/', MakePaymentView.as_view(), name='make_payment'),
-
+    path('waste_overview/<int:user_id>/', WasteOverviewView.as_view(), name='waste_overview'),
+    path('waste_payment_details/<int:user_id>/', WastePaymentDetailView.as_view(), name='waste_payment_details'),
 ]
 
     
