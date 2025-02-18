@@ -13,6 +13,7 @@
             <th>Time</th>
             <th>Waste Categories</th>
             <th>Kg</th>
+            <th>Status</th> <!-- Add the Status column -->
             <th>Action</th>
         </tr>
         {% for submission in waste_submissions %}
@@ -45,10 +46,19 @@
                 </td>
 
                 <td>
-                    <form action="" method="POST">
-                        {% csrf_token %}
-                        <button type="submit">Allocate</button>
-                    </form>
+                    <!-- Display the status of the submission -->
+                    {{ submission.get_status_display }}
+                </td>
+
+                <td>
+                    {% if submission.status == "complete" or submission.status == "assigned" %}
+    <!-- If status is "complete" or "assigned", disable the link -->
+    <span style="color: gray; cursor: not-allowed;">Allocate</span>
+{% else %}
+    <!-- If status is "pending" or "incomplete", the link is active -->
+    <a href="{% url 'allocate_employee' submission.id %}">Allocate</a>
+{% endif %}
+
                 </td>
             </tr>
         {% endfor %}

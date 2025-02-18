@@ -3,7 +3,7 @@ from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from .views import EmployeeLoginView
+from .views import EmployeeLoginView,EmployeeProfileUpdateView,EmployeeProfileView,AssignedTasksView,UpdateTaskStatusView
 
 # Swagger Schema Configuration
 schema_view = get_schema_view(
@@ -43,4 +43,11 @@ urlpatterns = [
     
     # Employee Login Endpoint
     path('login/', EmployeeLoginView.as_view(), name='employee_login'),
+    # path('update-profile/<int:employee_id>/', EmployeeProfileUpdateView.as_view(), name='update-profile'),
+    path('profile/<int:employee_id>/', EmployeeProfileView.as_view(), name='view-profile'),
+    path('update-profile/<int:employee_id>/', EmployeeProfileUpdateView.as_view(), name='update-profile'),
+     path('employee/tasks/', AssignedTasksView.as_view(), name='assigned-tasks'),
+    path('employee/tasks/<int:pk>/update/', UpdateTaskStatusView.as_view(), name='update-task-status'),
 ]
+    
+

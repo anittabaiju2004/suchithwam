@@ -25,6 +25,9 @@ class Ward(models.Model):
 
     def __str__(self):
         return f"Ward {self.ward_number}: {self.location}"
+
+
+        
 class Employee(models.Model):
     employee_id = models.CharField(max_length=20, unique=True)  # Unique Employee ID
     name = models.CharField(max_length=255)
@@ -32,7 +35,6 @@ class Employee(models.Model):
     phone = models.CharField(max_length=15)
     password = models.CharField(max_length=255)  # Store hashed password in production
     image = models.ImageField(upload_to="employee_images/", null=True, blank=True)  # Optional image
-    a_image = models.ImageField(upload_to="aadhar_image/", null=True, blank=True)  # Optional image
     ward = models.ManyToManyField(Ward, related_name="employees")  # Changed to ManyToManyField
 
     def __str__(self):

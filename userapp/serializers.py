@@ -135,12 +135,174 @@ class WardSerializer(serializers.ModelSerializer):
 
 
 
-from rest_framework import serializers
-from userapp.models import Payment
-from rest_framework import serializers
-from userapp.models import Payment
-import uuid
+# from rest_framework import serializers
+# from userapp.models import Payment
+# from rest_framework import serializers
+# from userapp.models import Payment
+# import uuid
 
+
+# class PaymentSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Payment
+#         fields = '__all__'
+
+#     def validate(self, data):
+#         payment_option = data.get('payment_option')
+
+#         if payment_option == 'card_payment':
+#             if not data.get('transaction_id'):
+#                 data['transaction_id'] = str(uuid.uuid4())  # Auto-generate if missing
+            
+#             required_fields = ['card_number', 'expiry_date', 'cvv', 'name_of_card']
+#             for field in required_fields:
+#                 if not data.get(field):
+#                     raise serializers.ValidationError({field: f"{field} is required for card payment."})
+
+#         return data
+
+
+
+
+
+from rest_framework import serializers
+from userapp.models import WasteSubmission, WasteSubmissionDetail, tbl_register
+from adminapp.models import tbl_category
+
+# class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = WasteSubmissionDetail
+#         fields = ['category', 'kilogram']
+# class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
+#     category_price = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = WasteSubmissionDetail
+#         fields = ['category', 'kilogram', 'category_price']
+
+#     def get_category_price(self, obj):
+#         return obj.category.price  # Fetch price from the category table
+
+
+# class WasteSubmissionSerializer(serializers.ModelSerializer):
+#     details = WasteSubmissionDetailSerializer(many=True)
+#     user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
+#     total_price = serializers.SerializerMethodField()
+
+#     date = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y"])
+#     time = serializers.TimeField(format="%H:%M:%S.%f", input_formats=["%H:%M:%S", "%H:%M:%S.%f"])
+
+#     class Meta:
+#         model = WasteSubmission
+#         fields = "__all__"
+
+#     def get_total_price(self, obj):
+#         return obj.total_price()
+
+#     def create(self, validated_data):
+#         details_data = validated_data.pop('details', [])
+#         waste_submission = WasteSubmission.objects.create(**validated_data)
+
+#         for detail in details_data:
+#             category = detail['category']
+#             WasteSubmissionDetail.objects.create(
+#                 waste_submission=waste_submission,
+#                 category=category,
+#                 kilogram=detail['kilogram']
+#             )
+
+#         return waste_submission
+# class WasteSubmissionSerializer(serializers.ModelSerializer):
+#     details = WasteSubmissionDetailSerializer(many=True)
+#     user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
+#     total_price = serializers.SerializerMethodField()
+
+#     date = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y"])
+#     time = serializers.TimeField(format="%H:%M:%S.%f", input_formats=["%H:%M:%S", "%H:%M:%S.%f"])
+
+#     class Meta:
+#         model = WasteSubmission
+#         fields = "__all__"
+
+#     def get_total_price(self, obj):
+#         return None  # Return null instead of calculating total price
+
+#     def create(self, validated_data):
+#         """Custom create method to handle nested `details` data"""
+#         details_data = validated_data.pop('details', [])  # Extract nested details
+#         waste_submission = WasteSubmission.objects.create(**validated_data)  # Create main submission
+
+#         # Create WasteSubmissionDetail records linked to the submission
+#         for detail in details_data:
+#             WasteSubmissionDetail.objects.create(waste_submission=waste_submission, **detail)
+
+#         return waste_submission
+
+# class WasteSubmissionSerializer(serializers.ModelSerializer):
+#     details = WasteSubmissionDetailSerializer(many=True)
+#     user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
+#     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)  # Allow total_price to be null
+
+#     date = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y"])
+#     time = serializers.TimeField(format="%H:%M:%S.%f", input_formats=["%H:%M:%S", "%H:%M:%S.%f"])
+
+#     class Meta:
+#         model = WasteSubmission
+#         fields = "__all__"
+
+#     def create(self, validated_data):
+#         """Custom create method to handle nested `details` data"""
+#         details_data = validated_data.pop('details', [])  # Extract nested details
+#         waste_submission = WasteSubmission.objects.create(**validated_data)  # Create main submission
+
+#         # Create WasteSubmissionDetail records linked to the submission
+#         for detail in details_data:
+#             WasteSubmissionDetail.objects.create(waste_submission=waste_submission, **detail)
+
+#         return waste_submission
+class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
+    category_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WasteSubmissionDetail
+        fields = ['category', 'kilogram', 'category_price', 'price']  # Added 'price' field
+
+    def get_category_price(self, obj):
+        return obj.category.price  # Fetch price from the category table
+class WasteSubmissionSerializer(serializers.ModelSerializer):
+    details = WasteSubmissionDetailSerializer(many=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)  # Allow total_price to be null
+
+    date = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y"])
+    time = serializers.TimeField(format="%H:%M:%S.%f", input_formats=["%H:%M:%S", "%H:%M:%S.%f"])
+
+    class Meta:
+        model = WasteSubmission
+        fields = "__all__"
+
+    def create(self, validated_data):
+        """Custom create method to handle nested `details` data"""
+        details_data = validated_data.pop('details', [])  # Extract nested details
+        waste_submission = WasteSubmission.objects.create(**validated_data)  # Create main submission
+
+        # Create WasteSubmissionDetail records linked to the submission
+        for detail in details_data:
+            category = detail.get('category')
+            price = category.price if category else 0.00  # Fetch price from category
+            WasteSubmissionDetail.objects.create(
+                waste_submission=waste_submission,
+                price=price,  # Set the category price
+                **detail
+            )
+
+        return waste_submission
+
+
+
+from rest_framework import serializers
+import uuid
+from .models import Payment
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -151,54 +313,19 @@ class PaymentSerializer(serializers.ModelSerializer):
         payment_option = data.get('payment_option')
 
         if payment_option == 'card_payment':
-            if not data.get('transaction_id'):
-                data['transaction_id'] = str(uuid.uuid4())  # Auto-generate if missing
-            
-            required_fields = ['card_number', 'expiry_date', 'cvv', 'cardholder_name']
+            required_fields = ['card_number', 'expiry_date', 'cvv', 'name_of_card']
             for field in required_fields:
                 if not data.get(field):
                     raise serializers.ValidationError({field: f"{field} is required for card payment."})
 
+            # Ensure a transaction ID is generated if missing
+            if not data.get('transaction_id'):
+                data['transaction_id'] = str(uuid.uuid4())
+
         return data
 
-
-
-
-
-from rest_framework import serializers
-from userapp.models import WasteSubmission, WasteSubmissionDetail, tbl_register
-from adminapp.models import tbl_category
-
-class WasteSubmissionDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WasteSubmissionDetail
-        fields = ['category', 'kilogram']
-
-class WasteSubmissionSerializer(serializers.ModelSerializer):
-    details = WasteSubmissionDetailSerializer(many=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=tbl_register.objects.all())
-    total_price = serializers.SerializerMethodField()
-
-    date = serializers.DateField(format="%d-%m-%Y", input_formats=["%d-%m-%Y"])
-    time = serializers.TimeField(format="%H:%M:%S.%f", input_formats=["%H:%M:%S", "%H:%M:%S.%f"])
-
-    class Meta:
-        model = WasteSubmission
-        fields = "__all__"
-
-    def get_total_price(self, obj):
-        return obj.total_price()
-
     def create(self, validated_data):
-        details_data = validated_data.pop('details', [])
-        waste_submission = WasteSubmission.objects.create(**validated_data)
-
-        for detail in details_data:
-            category = detail['category']
-            WasteSubmissionDetail.objects.create(
-                waste_submission=waste_submission,
-                category=category,
-                kilogram=detail['kilogram']
-            )
-
-        return waste_submission
+        """
+        Custom create method to handle saving the payment correctly
+        """
+        return Payment.objects.create(**validated_data)

@@ -54,12 +54,14 @@ urlpatterns = [
     path('categories/', CategoryListView.as_view(), name='category-list'),
     path('user_wards/', WardListView.as_view(), name='user_wards'),
     path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
-    path('my_waste_submissions/<int:user_id>/', UserWasteSubmissionListView.as_view(), name='my_waste_submissions'),
+    # path('my_waste_submissions/<int:user_id>/', UserWasteSubmissionListView.as_view(), name='my_waste_submissions'),
     path('profile/<int:id>/', UserProfileView.as_view(), name='user_profile'),
     path('profile/update/<int:id>/', UserProfileUpdateView.as_view(), name='update_user_profile'),
     path('make_payment/', MakePaymentView.as_view(), name='make_payment'),
     path('waste_overview/<int:user_id>/', WasteOverviewView.as_view(), name='waste_overview'),
     path('waste_payment_details/<int:user_id>/', WastePaymentDetailView.as_view(), name='waste_payment_details'),
+    path('waste-submission/edit/<int:waste_id>/', WasteSubmissionEditView.as_view(), name='waste_submission_edit'),
+    path('waste-submission/delete/<int:waste_id>/', WasteSubmissionDeleteView.as_view(), name='waste_submission_delete'),
 ]
 
     
