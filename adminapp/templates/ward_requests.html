@@ -1,0 +1,65 @@
+{% extends 'admin_index.html' %}
+{% load static %}
+
+{% block content %}
+
+<h2>Request From Wards</h2>
+<table border="1">
+    <thead>
+        <tr>
+            <th>SI No</th>
+            <th>Ward Number</th>
+            <th>Ward Name</th>
+            <th>Requests</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ward in wards %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ ward.ward_number }}</td>
+            <td>{{ ward.location }}</td>
+            <td><a href="{% url 'ward_request_details' ward.id %}" class="view-btn">View Requests</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #2c3e50;
+        color: #fff;
+    }
+
+    tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .view-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        background-color: #3498db;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .view-btn:hover {
+        background-color: #2980b9;
+    }
+</style>
+
+{% endblock %}

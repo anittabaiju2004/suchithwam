@@ -1,0 +1,30 @@
+{% extends 'admin_index.html' %}
+
+{% block content %}
+<div class="main-content">
+    <h1>Categories List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Category Name</th>
+                <th>Category Image</th>
+                <th>Category Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+                <td><img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 100px; height: auto;"></td>
+                <td>{{ category.price }}</td>
+                <td>
+                    <a href="{% url 'edit_category' category.id %}" class="button edit-button">Edit</a>
+                    <button class="button delete-button" onclick="openModal('{{ category.id }}')">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

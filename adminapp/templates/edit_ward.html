@@ -1,0 +1,23 @@
+<!-- edit_ward.html -->
+{% extends 'admin_index.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Edit Ward</h2>
+        
+        {% if error_message %}
+            <p class="error">{{ error_message }}</p>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            <label for="ward_number">Ward Number:</label>
+            <input type="number" name="ward_number" id="ward_number" value="{{ ward.ward_number }}" required><br><br>
+            
+            <label for="location">Location (From-To):</label>
+            <input type="text" name="location" id="location" value="{{ ward.location }}" required><br><br>
+            
+            <button type="submit">Update Ward</button>
+        </form>
+    </div>
+{% endblock %}

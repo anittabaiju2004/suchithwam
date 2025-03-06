@@ -1,0 +1,55 @@
+{% extends 'admin_index.html' %}
+{% block content %}
+<h2>Waste Requests for Ward {{ ward.ward_number }} - {{ ward.location }}</h2>
+
+{% if waste_submissions %}
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Place</th>
+            <th>Address</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Waste Categories</th>
+            <th>Kilograms</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+        </tr>
+        {% for submission in waste_submissions %}
+            <tr 
+                {% if submission.status == "completed" %}
+                    style="background-color: rgba(11, 169, 11, 0.916); color: white;"
+                {% elif submission.status == "pending" or submission.status == "incomplete" %}
+                    style="background-color: rgb(242, 37, 37); color: white;"
+                {% endif %}
+            >
+                <td>{{ submission.user.name }}</td>
+                <td>{{ submission.user.phone }}</td>
+                <td>{{ submission.user.place }}</td>
+                <td>{{ submission.user.address }}</td>
+                <td>{{ submission.date }}</td>
+                <td>{{ submission.time }}</td>
+                <td>
+                    {% for category in submission.category_list %}
+                        {{ category }}<br>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% if submission.kilo %}
+                        {{ submission.kilo }} kg
+                    {% else %}
+                        Not updated
+                    {% endif %}
+                </td>
+                <td>{{ submission.total_price }}</td>
+                <td>{{ submission.get_status_display }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No requests found for this ward.</p>
+{% endif %}
+
+<a href="{% url 'ward_requests' %}">Back to Wards</a>
+{% endblock %}
