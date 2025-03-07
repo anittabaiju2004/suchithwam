@@ -1,0 +1,32 @@
+{% extends 'admin_index.html' %}
+
+{% block content %}
+    <h2>Feedback List</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Rate</th>
+                <th>Feedback</th>
+                <th>Submitted At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feedback in feedbacks %}
+            <tr>
+                <td>{{ feedback.id }}</td>
+                <td>{{ feedback.user.name }}</td>
+                <td>{{ feedback.rate }}/5</td>
+                <td>{{ feedback.feedback }}</td>
+                <td>{{ feedback.created_at }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No feedback available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

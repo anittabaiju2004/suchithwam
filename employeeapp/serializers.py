@@ -36,6 +36,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 
 # serializers.py
+
 from rest_framework import serializers
 from userapp.models import WasteSubmission
 class WasteSubmissionUpdateSerializer(serializers.ModelSerializer):
@@ -53,3 +54,16 @@ class WasteSubmissionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = WasteSubmission
         fields = ['id', 'user_name', 'user_address', 'user_phone', 'ward', 'location', 'date', 'time', 'total_price', 'category_name', 'description']  # ✅ Added description field
+
+
+
+class EmployeeWasteSubmissionStatusSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    ward = serializers.CharField(source='user.ward.location', read_only=True)
+    user_address = serializers.CharField(source='user.address', read_only=True)
+    ward_no = serializers.CharField(source='user.ward_no', read_only=True)
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)  # ✅ Added total_price
+
+    class Meta:
+        model = WasteSubmission
+        fields = ['id', 'user_name', 'ward', 'user_address', 'ward_no', 'date', 'time', 'status', 'description', 'categories', 'total_price']

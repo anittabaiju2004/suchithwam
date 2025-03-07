@@ -274,3 +274,12 @@ def delete_employee(request, employee_id):
     messages.success(request, "Employee deleted successfully!")
     return redirect("list_employees")
 
+
+
+from django.shortcuts import render
+from userapp.models import Feedback
+
+def admin_feedback_list(request):
+    """View to display all feedbacks for the admin"""
+    feedbacks = Feedback.objects.all()
+    return render(request, 'admin_feedback_list.html', {'feedbacks': feedbacks})

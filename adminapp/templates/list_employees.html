@@ -5,11 +5,11 @@
     <h2 class="mb-4 text-center">Employee List</h2>
 
     {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} text-center">
-                {{ message }}
-            </div>
-        {% endfor %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} text-center">
+        {{ message }}
+    </div>
+    {% endfor %}
     {% endif %}
 
     <table class="table table-bordered table-striped text-center">
@@ -33,14 +33,15 @@
                 <td>{{ employee.phone }}</td>
                 <td>
                     {% for ward in employee.ward.all %}
-                        Ward {{ ward.ward_number }} - {{ ward.location }}<br>
+                    Ward {{ ward.ward_number }} - {{ ward.location }}<br>
                     {% endfor %}
                 </td>
                 <td>
                     {% if employee.image %}
-                        <img src="{{ employee.image.url }}" alt="Employee Image" width="50" height="50" class="rounded-circle">
+                    <img src="{{ employee.image.url }}" alt="Employee Image" width="50" height="50"
+                        class="rounded-circle">
                     {% else %}
-                        No Image
+                    No Image
                     {% endif %}
                 </td>
                 <td>

@@ -19,4 +19,5 @@ urlpatterns = [
       path("employees/", list_employees, name="list_employees"),
     path("employees/edit/<int:employee_id>/", edit_employee, name="edit_employee"),
     path("employees/delete/<int:employee_id>/", delete_employee, name="delete_employee"),
+    path('admin/feedbacks/', admin_feedback_list, name='admin_feedback_list'),
 ]

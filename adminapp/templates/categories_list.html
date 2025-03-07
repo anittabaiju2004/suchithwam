@@ -16,7 +16,8 @@
             {% for category in categories %}
             <tr>
                 <td>{{ category.name }}</td>
-                <td><img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 100px; height: auto;"></td>
+                <td><img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 100px; height: auto;">
+                </td>
                 <td>{{ category.price }}</td>
                 <td>
                     <a href="{% url 'edit_category' category.id %}" class="button edit-button">Edit</a>

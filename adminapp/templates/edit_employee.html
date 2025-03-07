@@ -6,11 +6,11 @@
         <h2 class="mb-4 text-center">Edit Employee</h2>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} text-center">
-                    {{ message }}
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} text-center">
+            {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
 
         <form method="post" enctype="multipart/form-data">
@@ -45,8 +45,8 @@
                 <label for="image" class="fw-bold me-3" style="width: 150px;">Employee Image:</label>
                 <input type="file" name="image" class="form-control">
                 {% if employee.image %}
-                    <p>Current Profile Image:</p>
-                    <img src="{{ employee.image.url }}" alt="Profile Image" width="150">
+                <p>Current Profile Image:</p>
+                <img src="{{ employee.image.url }}" alt="Profile Image" width="150">
                 {% endif %}
             </div>
 
@@ -54,13 +54,12 @@
                 <label for="ward" class="fw-bold me-3" style="width: 150px;">Ward(s):</label>
                 <select name="ward" class="form-select" multiple required>
                     {% for ward in wards %}
-                        <option value="{{ ward.id }}" 
-                            {% if ward.id in selected_ward_ids %} 
-                                style="background-color: red;"  <!-- Light green for selected -->
-                                Current
-                            {% endif %}>
-                            Ward {{ ward.ward_number }} - {{ ward.location }}
-                        </option>
+                    <option value="{{ ward.id }}" {% if ward.id in selected_ward_ids %} style="background-color: red;"
+                        <!-- Light green for selected -->
+                        Current
+                        {% endif %}>
+                        Ward {{ ward.ward_number }} - {{ ward.location }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>

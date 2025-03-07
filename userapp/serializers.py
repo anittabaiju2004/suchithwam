@@ -2,17 +2,21 @@ from rest_framework import serializers
 from .models import tbl_register
 from rest_framework import serializers
 from .models import tbl_register
+from rest_framework import serializers
+from .models import tbl_register
 class userregisterSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.SerializerMethodField()
+    profile_picture= serializers.SerializerMethodField()
 
     class Meta:
         model = tbl_register
-        fields = '__all__'
+        exclude = ['pswd']  # Exclude password from updates
 
     def get_profile_picture(self, obj):
+        """Ensure the profile picture path starts with '/media/'"""
         if obj.profile_picture:
-            return f"media/{obj.profile_picture.name}"
+            return f"/media/{obj.profile_picture.name}"  # Ensures '/media/' prefix
         return None
+
 
 
 from rest_framework import serializers
@@ -86,19 +90,41 @@ from rest_framework import generics, serializers
 from django.urls import path
 from .models import WasteSubmission, Payment
 from .serializers import WasteSubmissionSerializer
-
 class UserBookingsSerializer(serializers.ModelSerializer):
     waste = serializers.SerializerMethodField()
     payment_status = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()  # Corrected price handling
 
     class Meta:
         model = WasteSubmission
-        fields = ['id', 'date', 'time', 'waste', 'status', 'user_id', 'payment_status','total_price']
+        fields = ['id', 'date', 'time', 'waste', 'status', 'user_id', 'payment_status', 'total_price']
 
     def get_waste(self, obj):
         return obj.categories.split(',') if obj.categories else []
-    
-    
+
     def get_payment_status(self, obj):
         payment = Payment.objects.filter(waste_submission=obj).first()
         return payment.status if payment else 'Not Paid'
+
+    def get_total_price(self, obj):
+        """ Fetch total price from Payment model if available, else return WasteSubmission price """
+        payment = Payment.objects.filter(waste_submission=obj).first()
+        return str(payment.total_price) if payment else str(obj.total_price)  # Ensure string format for consistency
+
+
+
+from rest_framework import serializers
+from .models import Payment
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = '__all__'  # Include all fields
+
+from rest_framework import serializers
+from .models import Feedback
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ['id', 'user', 'rate', 'feedback','employee_id','created_at']

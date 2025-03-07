@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {% load static %}
     <meta charset="UTF-8">
@@ -63,15 +64,16 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <h2>Admin Login</h2>
 
         <!-- Display Django messages for errors -->
         {% if messages %}
-            {% for message in messages %}
-                <p class="error-message">{{ message }}</p>
-            {% endfor %}
+        {% for message in messages %}
+        <p class="error-message">{{ message }}</p>
+        {% endfor %}
         {% endif %}
 
         <form method="POST">
@@ -82,4 +84,5 @@
         </form>
     </div>
 </body>
+
 </html>

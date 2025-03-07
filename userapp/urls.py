@@ -6,7 +6,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from .views import *
-from userapp.views import MakePaymentView
+from userapp.views import MakePaymentView,UserPaymentHistoryView
 
 from . import views
 # Swagger Schema Configuration
@@ -29,6 +29,8 @@ router.register(r"user_register", user_registerViewSet, basename="user_register"
 router.register(r'waste_submission', WasteSubmissionViewSet, basename='waste_submission'),
 # router.register(r'profile', UserProfileViewSet, basename='user_profile')  # For viewing profile
 router.register(r'profile/update', UserProfileUpdateViewSet, basename='update_user_profile')  # Update profile (ViewSet)
+router.register(r'feedback', FeedbackViewSet, basename='feedback')
+
 
 
 # URL Patterns
@@ -59,9 +61,10 @@ urlpatterns = [
     path('profile/<int:id>/', UserProfileView.as_view(), name='user_profile'),  
     path('make_payment/', MakePaymentView.as_view(), name='make_payment'),
     path('user/bookings/<int:user_id>/', UserBookingsView.as_view(), name='user-bookings'),
-    path('waste_submissions/<int:submission_id>/reschedule/', RescheduleWasteSubmissionView.as_view(), name='reschedule_waste'),
+    path('reschedule/<int:submission_id>/', RescheduleWasteSubmissionView.as_view(), name='reschedule_waste'),
     path('update-payment/<int:waste_submission_id>/', UpdatePaymentView.as_view(), name='update-payment'),
-
+     path('user/<int:user_id>/payments/', UserPaymentHistoryView.as_view(), name='user-payment-history'),
+     
 
 ]
 

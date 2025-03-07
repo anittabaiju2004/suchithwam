@@ -20,7 +20,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from .models import tbl_register
 from .serializers import userregisterSerializer
-
 class user_registerViewSet(ModelViewSet):
     queryset = tbl_register.objects.all()
     serializer_class = userregisterSerializer
@@ -40,7 +39,7 @@ class user_registerViewSet(ModelViewSet):
                     "address": user.address,
                     "phone": user.phone,
                     "ward": user.ward.id if user.ward else None,
-                    "profile_picture": user.profile_picture.url if user.profile_picture else None,
+                    "profile_picture": f"/media/{user.profile_picture.name}" if user.profile_picture else None,  # Ensures '/media/' prefix
                     "longitude": user.longitude,  # Include longitude
                     "latitude": user.latitude,  # Include latitude
                 },
@@ -175,44 +174,55 @@ class UserProfileView(generics.RetrieveAPIView):
     serializer_class = userregisterSerializer
     lookup_field = 'id'
 
+from rest_framework import viewsets, status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from .models import tbl_register
+from .serializers import userregisterSerializer
 
-# ✅ Update Profile - With ViewSet (Shows existing values and updates at least one field)
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from .models import tbl_register
+from .serializers import userregisterSerializer
+
 class UserProfileUpdateViewSet(viewsets.ModelViewSet):
     """
     API to update user profile by ID (with ViewSet)
     """
     queryset = tbl_register.objects.all()
     serializer_class = userregisterSerializer
-    http_method_names = ['get', 'put', 'patch']  # Allow retrieving and updating
+    http_method_names = ['get', 'put', 'patch']
     lookup_field = 'id'
+    
 
-    parser_classes = [MultiPartParser, FormParser]  # Enables form upload in Swagger
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        Retrieve the existing profile data before updating
-        """
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    # Enable form-data & file uploads
+    parser_classes = [MultiPartParser, FormParser]
 
     def update(self, request, *args, **kwargs):
         """
-        Custom update function to ensure at least one field is updated
+        Custom update function to ensure profile_picture can be updated
         """
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
-        # Check if at least one field is being updated
         if not request.data:
             return Response({"error": "At least one field must be updated"}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
 
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Profile updated successfully", "data": serializer.data}, status=status.HTTP_200_OK)
+
+            # Return response with relative media path
+            response_data = serializer.data
+            response_data["profile_picture"] = response_data.get("profile_picture_url")  # Override field
+            response_data.pop("profile_picture_url", None)  # Remove additional field
+
+            return Response({"message": "Profile updated successfully", "data": response_data}, status=status.HTTP_200_OK)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -255,10 +265,18 @@ from datetime import datetime
 from .models import WasteSubmission
 from .serializers import WasteSubmissionSerializer
 
+from rest_framework.response import Response
+from rest_framework import status
+from datetime import datetime
+from rest_framework.views import APIView
+from .models import WasteSubmission
+from .serializers import WasteSubmissionSerializer
+
 class RescheduleWasteSubmissionView(APIView):
     """API to reschedule the date and/or time of an existing WasteSubmission"""
+    http_method_names = ['put']  # Allows only PUT requests
 
-    def patch(self, request, submission_id):
+    def put(self, request, submission_id):
         try:
             waste_submission = WasteSubmission.objects.get(id=submission_id)
         except WasteSubmission.DoesNotExist:
@@ -283,7 +301,22 @@ class RescheduleWasteSubmissionView(APIView):
                 return Response({'error': 'Invalid time format. Use HH:MM:SS.'}, status=status.HTTP_400_BAD_REQUEST)
 
         waste_submission.save()
-        return Response(WasteSubmissionSerializer(waste_submission).data, status=status.HTTP_200_OK)
+
+        # Serialize and filter response
+        waste_submission_data = WasteSubmissionSerializer(waste_submission).data
+
+        # Keep only required fields
+        filtered_data = {
+            "id": waste_submission_data["id"],
+            "date": waste_submission_data["date"],
+            "time": waste_submission_data["time"],
+            "status": waste_submission_data["status"],
+            "categories": waste_submission_data["categories"],
+            "total_price": waste_submission_data["total_price"],
+            "user": waste_submission_data["user"]
+        }
+
+        return Response(filtered_data, status=status.HTTP_200_OK)
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -359,3 +392,21 @@ class UpdatePaymentView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+from .serializers import PaymentSerializer
+class UserPaymentHistoryView(generics.ListAPIView):
+    serializer_class = PaymentSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')  # Ensure this matches the URL parameter
+        return Payment.objects.filter(user_id=user_id).order_by('id')  # Use 'user_id' correctly
+
+
+from rest_framework import viewsets
+from .models import Feedback
+from .serializers import FeedbackSerializer
+
+class FeedbackViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing feedback"""
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer

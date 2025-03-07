@@ -6,11 +6,11 @@
         <h2 class="mb-4 text-center">Register Employee</h2>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} text-center">
-                    {{ message }}
-                </div>
-            {% endfor %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} text-center">
+            {{ message }}
+        </div>
+        {% endfor %}
         {% endif %}
 
         <form method="post" enctype="multipart/form-data" class="needs-validation">
@@ -51,11 +51,11 @@
                 <select name="ward" class="form-select" id="ward" multiple required>
                     <option value="" disabled selected>Select Ward(s)</option>
                     {% for ward in wards %}
-                        <option value="{{ ward.id }}">{{ ward.ward_number }} - {{ ward.location }}</option>
+                    <option value="{{ ward.id }}">{{ ward.ward_number }} - {{ ward.location }}</option>
                     {% endfor %}
                 </select>
             </div><br>
-            
+
 
             <div class="text-center">
                 <button type="submit" class="btn btn-primary px-5">Register</button>

@@ -48,6 +48,8 @@ urlpatterns = [
      path('employee/waste-submissions/<str:employee_id>/', EmployeeWasteSubmissionView.as_view(), name='employee-waste-submissions'),
       path('waste-submission/update/<int:submission_id>/', WasteSubmissionUpdateView.as_view(), name='waste-submission-update'),
       path('view-card-payment/<int:waste_submission_id>/', ViewCardPaymentDetails.as_view(), name='view-card-payment'),
+      path('waste-submissions/completed/<str:employee_id>/', CompletedWasteSubmissionsView.as_view(), name='completed-waste-submissions'),
+    path('waste-submissions/rejected/<str:employee_id>/', RejectedWasteSubmissionsView.as_view(), name='rejected-waste-submissions'),
 
     
 ]

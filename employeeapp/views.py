@@ -106,33 +106,6 @@ from userapp.models import WasteSubmission
 from userapp.models import Payment
 from employeeapp.serializers import WasteSubmissionUpdateSerializer
 from decimal import Decimal
-# class WasteSubmissionUpdateView(APIView):
-#     def patch(self, request, submission_id):
-#         waste_submission = get_object_or_404(WasteSubmission, id=submission_id)
-#         payment = Payment.objects.filter(waste_submission=waste_submission).first()
-
-#         kilo = request.data.get("kilo")
-#         total_price = request.data.get("total_price")
-
-#         # Update kilo (weight)
-#         if kilo:
-#             waste_submission.kilo = kilo
-
-#         if payment and payment.payment_option == "cash":
-#             if total_price:
-#                 payment.total_price = Decimal(total_price)  # Ensure correct decimal value
-#                 waste_submission.status = "completed"
-#                 payment.cash_status = "paid"
-#             else:
-#                 waste_submission.status = "rejected"
-#                 payment.cash_status = "unpaid"
-
-#             payment.save()  # Ensure payment table is updated
-
-#         waste_submission.save()  # Ensure waste submission table is updated
-
-#         return Response({"message": "Waste submission updated successfully"}, status=status.HTTP_200_OK)
-
 
 from decimal import Decimal
 from rest_framework.views import APIView
@@ -203,3 +176,45 @@ class ViewCardPaymentDetails(APIView):
         # Serialize the payment data
         serializer = PaymentSerializer(payment)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from userapp.models import WasteSubmission
+from adminapp.models import Employee
+from employeeapp.serializers import EmployeeWasteSubmissionStatusSerializer
+
+class CompletedWasteSubmissionsView(APIView):
+    def get(self, request, employee_id):
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+            completed_submissions = WasteSubmission.objects.filter(
+                user__ward__in=employee.ward.all(), status="completed"
+            )
+
+            if not completed_submissions.exists():
+                return Response({"message": "No completed waste submissions found"}, status=status.HTTP_200_OK)
+
+            serializer = EmployeeWasteSubmissionStatusSerializer(completed_submissions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Employee.DoesNotExist:
+            return Response({"error": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class RejectedWasteSubmissionsView(APIView):
+    def get(self, request, employee_id):
+        try:
+            employee = Employee.objects.get(employee_id=employee_id)
+            rejected_submissions = WasteSubmission.objects.filter(
+                user__ward__in=employee.ward.all(), status="rejected"
+            )
+
+            if not rejected_submissions.exists():
+                return Response({"message": "No rejected waste submissions found"}, status=status.HTTP_200_OK)
+
+            serializer = EmployeeWasteSubmissionStatusSerializer(rejected_submissions, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Employee.DoesNotExist:
+            return Response({"error": "Employee not found"}, status=status.HTTP_404_NOT_FOUND)

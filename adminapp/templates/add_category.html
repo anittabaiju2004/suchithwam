@@ -1,32 +1,31 @@
 {% extends 'admin_index.html' %}
 
 {% block content %}
-    <header>
-        <h1>Add Category</h1>
-    </header>
-    <div class="content">
-        <form id="addCategoryForm" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <label for="categoryName">Category Name:</label>
-            <input type="text" id="categoryName" name="categoryName" placeholder="Enter category name" required><br><br>
-        
-            <label for="categoryImage">Category Image:</label>
-            <input type="file" id="categoryImage" name="categoryImage" accept="image/*" required><br><br>
-        
-            <label for="categoryPrice">Category Price:</label>
-            <input type="number" id="categoryPrice" name="categoryPrice" step="0.01" required><br><br>
-        
-            <input type="submit" value="Add Category">
-        </form>
-        
-        {% if messages %}
-            <ul class="message-list">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
-{% endblock %}
+<header>
+    <h1>Add Category</h1>
+</header>
+<div class="content">
+    <form id="addCategoryForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
 
+        <label for="categoryName">Category Name:</label>
+        <input type="text" id="categoryName" name="categoryName" placeholder="Enter category name" required><br><br>
+
+        <label for="categoryImage">Category Image:</label>
+        <input type="file" id="categoryImage" name="categoryImage" accept="image/*" required><br><br>
+
+        <label for="categoryPrice">Category Price:</label>
+        <input type="number" id="categoryPrice" name="categoryPrice" step="0.01" required><br><br>
+
+        <input type="submit" value="Add Category">
+    </form>
+
+    {% if messages %}
+    <ul class="message-list">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}
