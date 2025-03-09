@@ -127,4 +127,4 @@ from .models import Feedback
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ['id', 'user', 'rate', 'feedback','employee_id','created_at']
+        fields = ['id', 'user', 'rate', 'feedback','created_at']
