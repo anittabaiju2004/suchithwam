@@ -43,27 +43,53 @@ class WasteSubmissionUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WasteSubmission
         fields = ['status', 'kilo', 'description']  # ✅ Added description field
+
+from rest_framework import serializers
+from userapp.models import WasteSubmission
+from rest_framework import serializers
+from adminapp.models import tbl_category
+from userapp.models import WasteSubmission
+
 class WasteSubmissionListSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.name', read_only=True)
     user_address = serializers.CharField(source='user.address', read_only=True)
     user_phone = serializers.CharField(source='user.phone', read_only=True)
-    ward = serializers.CharField(source='user.ward', read_only=True)  # Assuming ward is related to the user
-    location = serializers.CharField(source='user.location', read_only=True)  # Assuming location is related to the user
-    category_name = serializers.CharField(source='details.category.name', read_only=True)
+    ward = serializers.CharField(source='user.ward.name', read_only=True)  
+    location = serializers.CharField(source='user.location', read_only=True)
+    category_names = serializers.SerializerMethodField()  # ✅ Fetch category names
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    description = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = WasteSubmission
-        fields = ['id', 'user_name', 'user_address', 'user_phone', 'ward', 'location', 'date', 'time', 'total_price', 'category_name', 'description']  # ✅ Added description field
+        fields = ['id', 'user_name', 'user_address', 'user_phone', 'ward', 'location', 'date', 'time', 'total_price', 'category_names', 'description']
+
+    def get_category_names(self, obj):
+        if obj.categories:
+            category_names = [name.strip() for name in obj.categories.split(",")]
+            categories = tbl_category.objects.filter(name__in=category_names).values_list("name", flat=True)
+            return list(categories)
+        return []
 
 
 
 class EmployeeWasteSubmissionStatusSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.name', read_only=True)
-    ward = serializers.CharField(source='user.ward.location', read_only=True)
+    ward = serializers.CharField(source='user.ward.name', read_only=True)
+    ward_no = serializers.CharField(source='user.ward.ward_no', read_only=True)
     user_address = serializers.CharField(source='user.address', read_only=True)
-    ward_no = serializers.CharField(source='user.ward_no', read_only=True)
-    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)  # ✅ Added total_price
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    category_names = serializers.SerializerMethodField()  # ✅ Fetch category names
 
     class Meta:
         model = WasteSubmission
-        fields = ['id', 'user_name', 'ward', 'user_address', 'ward_no', 'date', 'time', 'status', 'description', 'categories', 'total_price']
+        fields = ['id', 'user_name', 'ward', 'user_address', 'ward_no', 'date', 'time', 'status', 'description', 'category_names', 'total_price']
+
+    def get_category_names(self, obj):
+        if obj.categories:
+            category_names = [name.strip() for name in obj.categories.split(",")]
+            categories = tbl_category.objects.filter(name__in=category_names).values_list("name", flat=True)
+            return list(categories)
+        return []
+
+

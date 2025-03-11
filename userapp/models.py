@@ -24,19 +24,20 @@ class tbl_register(models.Model):
     # Profile picture field
     profile_picture = models.ImageField(upload_to="profile_pics/", null=True, blank=True)
     # Longitude and Latitude with default value 0.0
-    longitude = models.DecimalField(max_digits=11, decimal_places=7, default=0.0)
-    latitude = models.DecimalField(max_digits=11, decimal_places=7, default=0.0)
+    longitude = models.DecimalField(max_digits=20, decimal_places=7, default=0.0)
+    latitude = models.DecimalField(max_digits=20, decimal_places=7, default=0.0)
 
     def __str__(self):
         return self.name
-
 
 
 from django.db import models
 from adminapp.models import tbl_category
 from userapp.models import tbl_register  
 from decimal import Decimal
+import uuid
 
+# Waste Submission Model
 class WasteSubmission(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -46,18 +47,22 @@ class WasteSubmission(models.Model):
         ('incompleted', 'Incompleted'),
     ]
 
-    user = models.ForeignKey('tbl_register', on_delete=models.CASCADE)
+    user = models.ForeignKey(tbl_register, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     categories = models.TextField()  # Store category IDs as a comma-separated string
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     kilo = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Added kilo field
-    description = models.TextField(null=True, blank=True)  # ✅ Added description field
+    description = models.TextField(null=True, blank=True)  # Added description field
 
     def __str__(self):
         return f"{self.user.name} - {self.date} ({self.get_status_display()})"
 
+from django.db import models
+from decimal import Decimal
+import uuid
+from userapp.models import tbl_register, WasteSubmission  # Adjust import as per your app structure
 
 class Payment(models.Model):
     PAYMENT_OPTIONS = [
@@ -81,9 +86,9 @@ class Payment(models.Model):
     waste_submission = models.OneToOneField(WasteSubmission, on_delete=models.CASCADE, null=True, blank=True)
     payment_option = models.CharField(max_length=20, choices=PAYMENT_OPTIONS)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     cash_status = models.CharField(max_length=10, choices=CASH_STATUS_CHOICES, default='pending', null=True, blank=True)
-    
+
     # Card Payment Details
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     name_of_card = models.CharField(max_length=255, null=True, blank=True)
@@ -92,16 +97,14 @@ class Payment(models.Model):
     cvv = models.CharField(max_length=3, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        # Ensure total_price is updated from waste_submission if it's initially 0
-        if self.waste_submission and self.waste_submission.total_price and self.total_price in [0, Decimal('0.00')]:
-            self.total_price = self.waste_submission.total_price  
-
         if self.payment_option == 'cash':
+            if not self.pk:  # Only reset total_price to 0.00 if this is a new cash payment
+                self.total_price = Decimal('0.00')
+            
             self.status = 'cash'
-            self.total_price = Decimal('0.00')  # Explicitly set total_price to 0.00 for cash payments
-            self.cash_status = 'pending' if self.cash_status is None else self.cash_status  
+            self.cash_status = 'pending' if self.cash_status is None else self.cash_status
 
-            # Remove any card payment details
+            # Remove card payment details if cash is selected
             self.transaction_id = None
             self.name_of_card = None
             self.card_number = None
@@ -112,11 +115,15 @@ class Payment(models.Model):
             self.status = 'card_payment'
             self.cash_status = None  # Cash status not applicable for card payments
             
-            # Only generate a transaction_id if it's empty
-            if not self.transaction_id:
-                self.transaction_id = str(uuid.uuid4())  
+            # Set total price from waste submission if available
+            if self.waste_submission and self.waste_submission.total_price:
+                self.total_price = self.waste_submission.total_price  
 
-            # Update the associated WasteSubmission status to "completed"
+            # Generate a transaction ID if it's empty
+            if not self.transaction_id:
+                self.transaction_id = str(uuid.uuid4())
+
+            # Mark the waste submission as completed if payment is successful
             if self.waste_submission:
                 self.waste_submission.status = 'completed'
                 self.waste_submission.save()
@@ -125,7 +132,6 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.user.name} - {self.payment_option} - {self.status} - Cash Status: {self.cash_status or 'N/A'}"
-
 
 from django.db import models
 

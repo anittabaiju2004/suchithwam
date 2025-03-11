@@ -1,0 +1,39 @@
+{% extends 'admin_index.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Edit Recycler</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label>Recycler ID</label>
+            <input type="text" name="recycler_id" class="form-control" value="{{ recycler.recycler_id }}" required>
+        </div><br><br>
+        <div class="mb-3">
+            <label>Name</label>
+            <input type="text" name="name" class="form-control" value="{{ recycler.name }}" required>
+        </div><br><br>
+        <div class="mb-3">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" value="{{ recycler.email }}" required>
+        </div><br><br>
+        <div class="mb-3">
+            <label>Phone</label>
+            <input type="text" name="phone" class="form-control" value="{{ recycler.phone }}" required>
+        </div><br><br>
+        <div class="mb-3">
+            <label>Panchayath Name</label>
+            <input type="text" name="panchayath_name" class="form-control" value="{{ recycler.panchayath_name }}" required>
+        </div><br><br>
+        <div class="mb-3">
+            <label>Aadhar Number</label>
+            <input type="text" name="aadhar_number" class="form-control" value="{{ recycler.aadhar_number }}" required>
+        </div><br><br>
+        <div class="mb-3">
+            <label>Profile Picture</label>
+            <input type="file" name="profile_pic" class="form-control">
+        </div><br><br>
+        <button type="submit" class="btn btn-success">Update Recycler</button>
+    </form>
+</div>
+{% endblock %}

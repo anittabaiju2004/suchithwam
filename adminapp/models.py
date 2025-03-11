@@ -38,3 +38,27 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.employee_id} - {self.name}"
+
+from django.db import models
+
+class Recycler(models.Model):
+    recycler_id = models.CharField(max_length=50)  # Admin-assigned Recycler ID
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    password = models.CharField(max_length=255)  # Hashing recommended
+    phone = models.CharField(max_length=15)
+    profile_pic = models.ImageField(upload_to="recycler_profiles/", null=True, blank=True)
+    aadhar_number = models.CharField(max_length=12)
+    panchayath_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.recycler_id} - {self.name}"
+
+from django.db import models
+
+class WasteThreshold(models.Model):
+    limit = models.FloatField(default=50)  # Default 50 kg
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Threshold: {self.limit} kg"

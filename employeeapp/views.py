@@ -57,6 +57,15 @@ from userapp.models import WasteSubmission
 from adminapp.models import Employee
 from userapp.models import Payment  # Assuming Payment model is in payments app
 from employeeapp.serializers import WasteSubmissionListSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from userapp.models import WasteSubmission
+from adminapp.models import Employee
+from userapp.models import Payment
+from employeeapp.serializers import WasteSubmissionListSerializer
+
 class EmployeeWasteSubmissionView(APIView):
     def get(self, request, employee_id):
         try:
@@ -68,6 +77,8 @@ class EmployeeWasteSubmissionView(APIView):
 
             response_data = []
             for submission in waste_submissions:
+                print(f"Waste Submission ID: {submission.id}")  # ✅ Debugging: Print waste submission ID
+                
                 payment = Payment.objects.filter(waste_submission=submission).first()
                 payment_status = payment.status if payment else None
                 cash_status = payment.cash_status if payment else None
@@ -77,7 +88,7 @@ class EmployeeWasteSubmissionView(APIView):
                     "id": submission.id,
                     "name": submission.user.name,
                     "address": submission.user.address,
-                    "ward_number": submission.user.ward.ward_number if submission.user.ward else None,  # Added ward_number
+                    "ward_number": submission.user.ward.ward_number if submission.user.ward else None,
                     "ward": submission.user.ward.location if submission.user.ward else None,
                     "phone": submission.user.phone,
                     "location": f"{submission.user.latitude}, {submission.user.longitude}",
@@ -88,7 +99,7 @@ class EmployeeWasteSubmissionView(APIView):
                     "total_price": total_price,
                     "payment_status": payment_status,
                     "cash_status": cash_status,
-                    "employee_id":employee_id
+                    "employee_id": employee_id
                 })
 
             return Response(response_data, status=status.HTTP_200_OK)
@@ -118,44 +129,82 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
+from userapp.models import WasteSubmission, Payment
+from decimal import Decimal
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from userapp.models import WasteSubmission, Payment
+
 class WasteSubmissionUpdateView(APIView):
-    def patch(self, request, submission_id):
+    def put(self, request, submission_id):
+        # Get the waste submission object
         waste_submission = get_object_or_404(WasteSubmission, id=submission_id)
+        print(f"Waste Submission ID: {waste_submission.id}")  # Debugging: Print waste submission ID
+
+        # Fetch the associated payment record
         payment = Payment.objects.filter(waste_submission=waste_submission).first()
 
+        # Extract data from request
         kilo = request.data.get("kilo")
         total_price = request.data.get("total_price")
-        description = request.data.get("description")  # ✅ Get the description from request data
+        description = request.data.get("description")  # ✅ Get the description
 
-        print(f"Received Data - Kilo: {kilo} Total Price: {total_price} Description: {description}")
+        print(f"Received Data - Kilo: {kilo}, Total Price: {total_price}, Description: {description}")
 
         # Update kilo (weight)
         if kilo:
-            waste_submission.kilo = kilo
+            waste_submission.kilo = Decimal(kilo)  # Ensure proper decimal conversion
 
-        # ✅ Update description
+        # Update description
         if description:
             waste_submission.description = description
 
         if payment:
-            print(f"Payment Found - ID: {payment.id} Option: {payment.payment_option}")
+            print(f"Payment Found - ID: {payment.id}, Option: {payment.payment_option}")
 
             if payment.payment_option == "cash":
-                if total_price:
-                    payment.total_price = Decimal(total_price)  # Ensure correct decimal value
-                    waste_submission.status = "completed"
-                    payment.cash_status = "paid"
-                else:
+                print(f"Total Price Before Update: {payment.total_price}")
+
+                if total_price == "0.00":  # If total price is zero, reject the submission
                     waste_submission.status = "rejected"
                     payment.cash_status = "unpaid"
+                    payment.total_price = Decimal(total_price)
+                    print(f"Updating Payment - Rejected, New Cash Status: {payment.cash_status}")
 
-                payment.save()  # Ensure payment table is updated
-                print(f"Updating Payment - Cash Status: {payment.cash_status} Total Price: {payment.total_price}")
+                else:  # Otherwise, process as completed
+                    payment.total_price = Decimal(total_price)  # Convert safely
+                    waste_submission.status = "completed"
+                    payment.cash_status = "paid"
+                    print(f"Updating Payment - New Cash Status: {payment.cash_status}, Total Price: {payment.total_price}")
 
-        waste_submission.save()  # ✅ Ensure waste submission table is updated, including description
-        print(f"Waste Submission Updated Successfully - Status: {waste_submission.status} Description: {waste_submission.description}")
+                # Save both models
+                payment.save()
+                waste_submission.save()
 
-        return Response({"message": "Waste submission updated successfully"}, status=status.HTTP_200_OK)
+                print(f"Waste Submission Status After Save: {waste_submission.status}")
+                print(f"Payment Cash Status After Save: {payment.cash_status}")
+
+        else:
+            print("No Payment Record Found for this Waste Submission.")
+
+        # Return response
+        return Response({
+            "message": "Waste submission updated successfully",
+            "waste_submission": {
+                "id": waste_submission.id,
+                "status": waste_submission.status,
+                "kilo": str(waste_submission.kilo),
+                "description": waste_submission.description,
+                "total_price": str(waste_submission.total_price)
+            },
+            "payment": {
+                "id": payment.id if payment else None,
+                "cash_status": payment.cash_status if payment else None,
+                "total_price": str(payment.total_price) if payment else None,
+            }
+        }, status=status.HTTP_200_OK)
 
 
 from rest_framework.views import APIView

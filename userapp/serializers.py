@@ -4,18 +4,37 @@ from rest_framework import serializers
 from .models import tbl_register
 from rest_framework import serializers
 from .models import tbl_register
-class userregisterSerializer(serializers.ModelSerializer):
-    profile_picture= serializers.SerializerMethodField()
+class UserRegisterSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = tbl_register
-        exclude = ['pswd']  # Exclude password from updates
+        fields = "__all__"  # Include everything, including `pswd`
 
     def get_profile_picture(self, obj):
         """Ensure the profile picture path starts with '/media/'"""
         if obj.profile_picture:
             return f"/media/{obj.profile_picture.name}"  # Ensures '/media/' prefix
         return None
+
+
+
+from rest_framework import serializers
+from .models import tbl_register
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.SerializerMethodField()
+
+    class Meta:
+        model = tbl_register
+        exclude = ["pswd"]  # Exclude password from update/retrieve
+
+    def get_profile_picture(self, obj):
+        """Return full media URL of profile picture or None if not set"""
+        if hasattr(obj, 'profile_picture') and obj.profile_picture:  
+            return f"/media/{obj.profile_picture.name}"
+        return None  # Return None if no profile picture exists
+
 
 
 

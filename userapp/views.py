@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from .models import tbl_register
-from .serializers import userregisterSerializer
+# from userapp.serializers import userregisterSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet
@@ -14,20 +14,20 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from .models import tbl_register
-from .serializers import userregisterSerializer
+# from .serializers import userregisterSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.response import Response
 from .models import tbl_register
-from .serializers import userregisterSerializer
+from userapp.serializers import UserRegisterSerializer
 class user_registerViewSet(ModelViewSet):
     queryset = tbl_register.objects.all()
-    serializer_class = userregisterSerializer
+    serializer_class = UserRegisterSerializer
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid():       
             user = serializer.save()
             return Response(
                 {
@@ -163,66 +163,78 @@ from rest_framework import viewsets, generics, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser  # Enables form upload in Swagger
 from .models import tbl_register
-from .serializers import userregisterSerializer
-
-# ✅ View Profile - Without ViewSet
+from .serializers import UserRegisterSerializer
+from rest_framework import generics, viewsets, status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from .models import tbl_register
+# from .serializers import userregisterSeUserRegisterSerializerrializer
+from rest_framework import generics, viewsets, status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from .models import tbl_register
+from userapp.serializers import UserRegisterSerializer,UserProfileUpdateSerializer
 class UserProfileView(generics.RetrieveAPIView):
     """
     API to retrieve user profile by ID (without ViewSet)
     """
     queryset = tbl_register.objects.all()
-    serializer_class = userregisterSerializer
-    lookup_field = 'id'
+    serializer_class = UserRegisterSerializer
+    lookup_field = "id"
 
-from rest_framework import viewsets, status
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from .models import tbl_register
-from .serializers import userregisterSerializer
-
-from rest_framework.parsers import MultiPartParser, FormParser
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if isinstance(response.data, dict):
+            response.data.pop("pswd", None)  # Remove password field safely
+        return response
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from .models import tbl_register
-from .serializers import userregisterSerializer
+from .serializers import UserProfileUpdateSerializer
 
-class UserProfileUpdateViewSet(viewsets.ModelViewSet):
-    """
-    API to update user profile by ID (with ViewSet)
-    """
-    queryset = tbl_register.objects.all()
-    serializer_class = userregisterSerializer
-    http_method_names = ['get', 'put', 'patch']
-    lookup_field = 'id'
-    
+class UserProfileUpdateViewSet(viewsets.ViewSet):
 
-    # Enable form-data & file uploads
-    parser_classes = [MultiPartParser, FormParser]
+    def retrieve(self, request, pk=None):  
+        """Retrieve user profile details"""
+        try:
+            user = tbl_register.objects.get(id=pk)
+            serializer = UserProfileUpdateSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except tbl_register.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    def update(self, request, *args, **kwargs):
-        """
-        Custom update function to ensure profile_picture can be updated
-        """
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
+    def update(self, request, pk=None):  
+        """Update user profile details and profile picture"""
+        try:
+            user = tbl_register.objects.get(id=pk)
+            data = request.data.copy()
 
-        if not request.data:
-            return Response({"error": "At least one field must be updated"}, status=status.HTTP_400_BAD_REQUEST)
+            # Update text fields
+            user.name = data.get('name', user.name)
+            user.email = data.get('email', user.email)
 
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            # Update profile picture if provided
+            if 'profile_picture' in request.FILES:
+                image = request.FILES['profile_picture']
 
-        if serializer.is_valid():
-            serializer.save()
+                # Delete old profile picture if it exists
+                if hasattr(user, 'profile_picture') and user.profile_picture:
+                    default_storage.delete(user.profile_picture.name)
 
-            # Return response with relative media path
-            response_data = serializer.data
-            response_data["profile_picture"] = response_data.get("profile_picture_url")  # Override field
-            response_data.pop("profile_picture_url", None)  # Remove additional field
+                # Save new profile picture
+                image_path = default_storage.save(f"profile_pictures/{image.name}", ContentFile(image.read()))
+                user.profile_picture = image_path  # Save the new image path
 
-            return Response({"message": "Profile updated successfully", "data": response_data}, status=status.HTTP_200_OK)
+            user.save()
+            serializer = UserProfileUpdateSerializer(user)
+            return Response({'status': 'success', 'message': 'Profile updated successfully', 'data': serializer.data}, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        except tbl_register.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 from rest_framework.response import Response
 from rest_framework import status

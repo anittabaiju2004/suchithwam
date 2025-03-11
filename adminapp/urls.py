@@ -20,4 +20,10 @@ urlpatterns = [
     path("employees/edit/<int:employee_id>/", edit_employee, name="edit_employee"),
     path("employees/delete/<int:employee_id>/", delete_employee, name="delete_employee"),
     path('admin/feedbacks/', admin_feedback_list, name='admin_feedback_list'),
+    path("register_recycler/", register_recycler, name="register_recycler"),
+    path("manage_recyclers/", manage_recyclers, name="manage_recyclers"),
+    path("edit_recycler/<int:recycler_id>/", edit_recycler, name="edit_recycler"),
+    path("delete_recycler/<int:recycler_id>/", delete_recycler, name="delete_recycler"),
+
+     path("register_recycler/", register_recycler, name="register_recycler"),
 ]

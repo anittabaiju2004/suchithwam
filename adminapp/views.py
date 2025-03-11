@@ -1,12 +1,33 @@
 from django.shortcuts import render
 
 from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect
+from .models import WasteThreshold
 
-def admin_index(request):
-    if not request.session.get("admin_logged_in"):
-        return redirect("admin_login")  # Redirect if not logged in
+# def admin_index(request):
+#     threshold = WasteThreshold.objects.first()
+#     total_waste = 55  # Example total waste (Replace with actual data)
     
-    return render(request, "admin_index.html")
+#     # Handle threshold update
+#     if request.method == "POST":
+#         new_limit = float(request.POST["limit"])
+#         if threshold:
+#             threshold.limit = new_limit
+#             threshold.save()
+#         else:
+#             WasteThreshold.objects.create(limit=new_limit)
+#         return redirect("admin_index")  # Refresh page after update
+    
+#     over_limit = total_waste > threshold.limit if threshold else False
+
+#     return render(request, "admin_index.html", {
+#         "threshold": threshold.limit if threshold else 50,
+#         "total_waste": total_waste,
+#         "over_limit": over_limit
+#     })
+def admin_index(request):
+    return render(request,'admin_index.html')
+
 
 def admin_logout(request):
     request.session.flush()  # Clear session
@@ -283,3 +304,88 @@ def admin_feedback_list(request):
     """View to display all feedbacks for the admin"""
     feedbacks = Feedback.objects.all()
     return render(request, 'admin_feedback_list.html', {'feedbacks': feedbacks})
+
+
+from django.shortcuts import render, redirect
+from .models import Recycler
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Recycler
+def register_recycler(request):
+    if request.method == "POST":
+        recycler_id = request.POST.get("recycler_id")
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")  # Password is stored as plain text
+        phone = request.POST.get("phone")
+        profile_pic = request.FILES.get("profile_pic")
+        aadhar_number = request.POST.get("aadhar_number")
+        panchayath_name = request.POST.get("panchayath_name")
+
+        recycler = Recycler(
+            recycler_id=recycler_id,
+            name=name,
+            email=email,
+            password=password,  # Storing plaintext password (not secure)
+            phone=phone,
+            profile_pic=profile_pic,
+            aadhar_number=aadhar_number,
+            panchayath_name=panchayath_name,
+        )
+        recycler.save()
+
+        return redirect('manage_recyclers')
+
+    return render(request, "register_recycler.html")
+
+
+def edit_recycler(request, recycler_id):
+    recycler = get_object_or_404(Recycler, id=recycler_id)
+
+    if request.method == "POST":
+        recycler.recycler_id = request.POST.get("recycler_id")
+        recycler.name = request.POST.get("name")
+        recycler.email = request.POST.get("email")
+        recycler.password = request.POST.get("password")
+        recycler.phone = request.POST.get("phone")
+        recycler.aadhar_number = request.POST.get("aadhar_number")
+        recycler.panchayath_name = request.POST.get("panchayath_name")
+
+        if 'profile_pic' in request.FILES:
+            recycler.profile_pic = request.FILES['profile_pic']
+
+        recycler.save()
+        return redirect('manage_recyclers')
+
+    return render(request, "edit_recycler.html", {"recycler": recycler})
+
+
+def manage_recyclers(request):
+    recyclers = Recycler.objects.all()
+    return render(request, "manage_recyclers.html", {"recyclers": recyclers})
+
+
+# def edit_recycler(request, recycler_id):
+#     recycler = get_object_or_404(Recycler, id=recycler_id)
+
+#     if request.method == "POST":
+#         recycler.name = request.POST.get("name")
+#         recycler.email = request.POST.get("email")
+#         recycler.password = request.POST.get("password")
+#         recycler.phone = request.POST.get("phone")
+#         recycler.aadhar_number = request.POST.get("aadhar_number")
+#         recycler.panchayath_name = request.POST.get("panchayath_name")
+
+#         if 'profile_pic' in request.FILES:
+#             recycler.profile_pic = request.FILES['profile_pic']
+
+#         recycler.save()
+#         return redirect('manage_recyclers')
+
+#     return render(request, "edit_recycler.html", {"recycler": recycler})
+
+def delete_recycler(request, recycler_id):
+    recycler = get_object_or_404(Recycler, id=recycler_id)
+    
+    if request.method == "POST":
+        recycler.delete()
+        return redirect('manage_recyclers')
