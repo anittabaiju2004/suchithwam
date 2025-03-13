@@ -25,8 +25,73 @@ from .models import WasteThreshold
 #         "total_waste": total_waste,
 #         "over_limit": over_limit
 #     })
+# def admin_index(request):
+#     return render(request,'admin_index.html')
+
+from django.shortcuts import render, redirect
+from .models import WasteThreshold
+
+# def admin_index(request):
+#     # Retrieve or create the threshold object
+#     threshold, created = WasteThreshold.objects.get_or_create(id=1)
+
+#     if request.method == "POST":
+#         new_limit = request.POST.get("limit")
+#         if new_limit:
+#             threshold.limit = float(new_limit)
+#             threshold.save()
+#             return redirect('admin_index')  # Redirect to avoid form resubmission
+
+#     return render(request, 'admin_index.html', {'threshold': threshold.limit})
+from django.shortcuts import render
+from userapp.models import WasteSubmission
+
+# def admin_index(request):
+#     status_counts = {
+#         'Pending': WasteSubmission.objects.filter(status='pending').count(),
+#         'Completed': WasteSubmission.objects.filter(status='completed').count(),
+#         'Rejected': WasteSubmission.objects.filter(status='rejected').count(),
+#     }
+
+#     context = {
+#         'status_counts': status_counts if status_counts else {}
+#     }
+#     return render(request, 'admin_index.html', context)
+from django.shortcuts import render, redirect
+from django.db.models import Sum
+from .models import  WasteThreshold
+
 def admin_index(request):
-    return render(request,'admin_index.html')
+    # Retrieve or create a threshold instance
+    threshold, created = WasteThreshold.objects.get_or_create(id=1)  # Ensuring a single threshold record
+
+    # Get status counts
+    status_counts = {
+        'Pending': WasteSubmission.objects.filter(status='pending').count(),
+        'Completed': WasteSubmission.objects.filter(status='completed').count(),
+        'Rejected': WasteSubmission.objects.filter(status='rejected').count(),
+    }
+
+    # Calculate total waste (sum of 'kilo' field)
+    total_waste = WasteSubmission.objects.aggregate(total=Sum('kilo'))['total'] or 0
+
+    # Check if total waste exceeds threshold
+    over_limit = total_waste > threshold.limit
+
+    if request.method == "POST":
+        new_limit = request.POST.get('limit')
+        if new_limit:
+            threshold.limit = float(new_limit)
+            threshold.save()
+        return redirect('admin_index')  # Redirect to refresh data
+
+    context = {
+        'status_counts': status_counts,
+        'total_waste': total_waste,
+        'threshold': threshold.limit,
+        'over_limit': over_limit
+    }
+    return render(request, 'admin_index.html', context)
 
 
 def admin_logout(request):

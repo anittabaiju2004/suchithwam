@@ -42,8 +42,7 @@ from userapp.models import WasteSubmission
 class WasteSubmissionUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = WasteSubmission
-        fields = ['status', 'kilo', 'description']  # ✅ Added description field
-
+        fields = ['status', 'kilo', 'description'] 
 from rest_framework import serializers
 from userapp.models import WasteSubmission
 from rest_framework import serializers

@@ -158,7 +158,7 @@ class WasteSubmissionUpdateView(APIView):
             waste_submission.kilo = Decimal(kilo)  # Ensure proper decimal conversion
 
         # Update description
-        if description:
+        if description is not None:  
             waste_submission.description = description
 
         if payment:

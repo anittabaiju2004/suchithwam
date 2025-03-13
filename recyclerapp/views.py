@@ -50,6 +50,7 @@ class RecyclerLoginView(APIView):
                 return Response({
                     "message": "Login successful",
                     "recycler_id": recycler.recycler_id,
+                    "password":recycler.password,
                     "name": recycler.name
                 }, status=status.HTTP_200_OK)
 
