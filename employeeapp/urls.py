@@ -44,7 +44,7 @@ urlpatterns = [
     path('login/', EmployeeLoginView.as_view(), name='employee_login'),
      path('profile/<str:employee_id>/', EmployeeProfileView.as_view(), name='view-profile'),
 
-    path('update-profile/<int:employee_id>/', EmployeeProfileUpdateView.as_view(), name='update-profile'),
+#    path('update-profile/<str:employee_id>/', UpdateProfileView.as_view(), name='update-profile'),
      path('employee/waste-submissions/<str:employee_id>/', EmployeeWasteSubmissionView.as_view(), name='employee-waste-submissions'),
       path('waste-submission/update/<int:submission_id>/', WasteSubmissionUpdateView.as_view(), name='waste-submission-update'),
       path('view-card-payment/<int:waste_submission_id>/', ViewCardPaymentDetails.as_view(), name='view-card-payment'),

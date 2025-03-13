@@ -27,7 +27,6 @@ schema_view = get_schema_view(
 router = DefaultRouter()
 router.register(r"user_register", user_registerViewSet, basename="user_register"),
 router.register(r'waste_submission', WasteSubmissionViewSet, basename='waste_submission'),
-# router.register(r'profile', UserProfileViewSet, basename='user_profile')  # For viewing profile
 router.register(r'profile/update', UserProfileUpdateViewSet, basename='update_user_profile')  # Update profile (ViewSet)
 router.register(r'feedback', FeedbackViewSet, basename='feedback')
 

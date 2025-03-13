@@ -4,59 +4,14 @@ from django.shortcuts import render, redirect
 from django.shortcuts import render, redirect
 from .models import WasteThreshold
 
-# def admin_index(request):
-#     threshold = WasteThreshold.objects.first()
-#     total_waste = 55  # Example total waste (Replace with actual data)
-    
-#     # Handle threshold update
-#     if request.method == "POST":
-#         new_limit = float(request.POST["limit"])
-#         if threshold:
-#             threshold.limit = new_limit
-#             threshold.save()
-#         else:
-#             WasteThreshold.objects.create(limit=new_limit)
-#         return redirect("admin_index")  # Refresh page after update
-    
-#     over_limit = total_waste > threshold.limit if threshold else False
 
-#     return render(request, "admin_index.html", {
-#         "threshold": threshold.limit if threshold else 50,
-#         "total_waste": total_waste,
-#         "over_limit": over_limit
-#     })
-# def admin_index(request):
-#     return render(request,'admin_index.html')
 
 from django.shortcuts import render, redirect
 from .models import WasteThreshold
 
-# def admin_index(request):
-#     # Retrieve or create the threshold object
-#     threshold, created = WasteThreshold.objects.get_or_create(id=1)
-
-#     if request.method == "POST":
-#         new_limit = request.POST.get("limit")
-#         if new_limit:
-#             threshold.limit = float(new_limit)
-#             threshold.save()
-#             return redirect('admin_index')  # Redirect to avoid form resubmission
-
-#     return render(request, 'admin_index.html', {'threshold': threshold.limit})
 from django.shortcuts import render
 from userapp.models import WasteSubmission
 
-# def admin_index(request):
-#     status_counts = {
-#         'Pending': WasteSubmission.objects.filter(status='pending').count(),
-#         'Completed': WasteSubmission.objects.filter(status='completed').count(),
-#         'Rejected': WasteSubmission.objects.filter(status='rejected').count(),
-#     }
-
-#     context = {
-#         'status_counts': status_counts if status_counts else {}
-#     }
-#     return render(request, 'admin_index.html', context)
 from django.shortcuts import render, redirect
 from django.db.models import Sum
 from .models import  WasteThreshold
