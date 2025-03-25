@@ -59,6 +59,7 @@ class WasteSubmission(models.Model):
     def __str__(self):
         return f"{self.user.name} - {self.date} ({self.get_status_display()})"
 
+from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
 from decimal import Decimal
 import uuid
@@ -92,9 +93,28 @@ class Payment(models.Model):
     # Card Payment Details
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     name_of_card = models.CharField(max_length=255, null=True, blank=True)
-    card_number = models.CharField(max_length=16, null=True, blank=True)
+    
+    card_number = models.CharField(
+        max_length=16,
+        null=True,
+        blank=True,
+        validators=[
+            MinLengthValidator(16, message="Card number must be exactly 16 digits."),
+            RegexValidator(r'^\d{16}$', message="Card number must contain only digits.")
+        ]
+    )
+
     expiry_date = models.CharField(max_length=5, null=True, blank=True)  # Format: MM/YY
-    cvv = models.CharField(max_length=3, null=True, blank=True)
+    
+    cvv = models.CharField(
+        max_length=3,
+        null=True,
+        blank=True,
+        validators=[
+            MinLengthValidator(3, message="CVV must be exactly 3 digits."),
+            RegexValidator(r'^\d{3}$', message="CVV must contain only digits.")
+        ]
+    )
 
     def save(self, *args, **kwargs):
         if self.payment_option == 'cash':
@@ -125,7 +145,7 @@ class Payment(models.Model):
 
             # Mark the waste submission as completed if payment is successful
             if self.waste_submission:
-                self.waste_submission.status = 'completed'
+                self.waste_submission.status = 'pending'
                 self.waste_submission.save()
 
         super().save(*args, **kwargs)

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-    <style>
+   
         /* General Styles */
         body {
             margin: 0;
@@ -246,14 +246,9 @@
                         <li><a href="{% url 'list_employees' %}">List Employees</a></li>
                     </ul>
                 </li>
+                <li><a href="{% url 'manage_recyclers' %}" class="active">Manage Recyclers</a></li>
 
-                <li class="dropdown">
-                    <a href="#">Recyclers <span class="arrow">&#9660;</span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'register_recycler' %}">Register Recycler</a></li>
-                        <li><a href="{% url 'manage_recyclers' %}">Manage Recyclers</a></li>
-                    </ul>
-                </li>
+                
 
                 <li><a href="{% url 'admin_feedback_list' %}">View Feedback</a></li>
                 <li><a href="{% url 'ward_requests' %}">Requests</a></li>
@@ -281,6 +276,8 @@
             </div>
             {% endif %}
             
+           
+
             <h3>Set Waste Threshold</h3>
             <form method="post">
                 {% csrf_token %}
@@ -289,38 +286,52 @@
                 <button type="submit">Update</button>
             </form>
             
+            <!-- Recycler Quotation and Status Section -->
+            <h3>Recycler Quotation Details</h3>
+            <p><strong>Quotation Amount:</strong> ₹{{ quotation|default:"N/A" }}</p>
+            <p><strong>Status:</strong> {{ status|default:"Pending" }}</p>
+            
             {% endblock %}
         </div>
     </div>
 
-    <!-- Chart.js Scripts -->
     <script>
-        // Add event listener to handle dropdown toggle
         document.addEventListener('DOMContentLoaded', function () {
             const dropdowns = document.querySelectorAll('.dropdown');
-
+    
             dropdowns.forEach(dropdown => {
                 dropdown.addEventListener('click', function () {
                     this.classList.toggle('active');
                 });
             });
-        });
-        var ctx = document.getElementById('wasteChart').getContext('2d');
-        var wasteChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Pending', 'Completed', 'Rejected'],
-                datasets: [{
-                    data: [
-                        {{ status_counts.Pending }},
-                {{ status_counts.Completed }},
-                        {{ status_counts.Rejected }}
-                    ],
-        backgroundColor: ['blue', 'green', 'red']
-                }]
+    
+            // Ensure Django template variables are safely converted to JavaScript values
+            var pending = Number("{{ status_counts.Pending|default:0 }}");
+            var completed = Number("{{ status_counts.Completed|default:0 }}");
+            var rejected = Number("{{ status_counts.Rejected|default:0 }}");
+    
+            // Sample waste data (Replace this with actual data from API)
+            const wasteData = [pending, completed, rejected]; 
+    
+            if (wasteData.every(value => value === 0)) {  
+                // No waste data: Hide canvas and show message
+                document.getElementById("wasteChart").style.display = "none";
+                document.getElementById("noWasteMessage").style.display = "block";
+            } else {
+                // Waste data exists: Render chart
+                const ctx = document.getElementById("wasteChart").getContext("2d");
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Pending', 'Completed', 'Rejected'],
+                        datasets: [{
+                            data: wasteData,
+                            backgroundColor: ['blue', 'green', 'red']
+                        }]
+                    }
+                });
             }
         });
-
     </script>
 </body>
 

@@ -3,8 +3,8 @@ from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from .views import RecyclerLoginView  # Import RecyclerLoginView
-
+from .views import RecyclerLoginView# Import RecyclerLoginView,
+from .views import WasteThresholdView ,RecyclerQuotationView 
 # Swagger Schema Configuration
 schema_view = get_schema_view(
     openapi.Info(
@@ -44,5 +44,7 @@ urlpatterns = [
 
     # API Router
     path('', include(router.urls)),
-    path('recycler_login/', RecyclerLoginView.as_view(), name='recycler_login'), 
+    path('recycler_login/', RecyclerLoginView.as_view(), name='recycler_login'),
+     path('waste-threshold/', WasteThresholdView.as_view(), name='waste_threshold'), 
+     path('recycler/quotation/', RecyclerQuotationView.as_view(), name='recycler-quotation'),
 ]

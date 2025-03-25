@@ -81,10 +81,26 @@ class WasteSubmissionSerializer(serializers.ModelSerializer):
 from rest_framework import serializers
 import uuid 
 from .models import Payment
+from rest_framework import serializers
+import uuid 
+from .models import Payment
+
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = '__all__'
+
+    def validate_card_number(self, value):
+        """Ensure the card number is exactly 16 digits."""
+        if not value.isdigit() or len(value) != 16:
+            raise serializers.ValidationError("Card number must be exactly 16 digits.")
+        return value
+
+    def validate_cvv(self, value):
+        """Ensure the CVV is exactly 3 digits."""
+        if not value.isdigit() or len(value) != 3:
+            raise serializers.ValidationError("CVV must be exactly 3 digits.")
+        return value
 
     def validate(self, data):
         payment_option = data.get('payment_option')
@@ -104,6 +120,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         # Set the default status as "pending"
         validated_data['status'] = 'pending'
         return Payment.objects.create(**validated_data)
+
 
 from rest_framework import generics, serializers
 from django.urls import path

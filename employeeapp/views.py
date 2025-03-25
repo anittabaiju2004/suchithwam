@@ -136,7 +136,6 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from userapp.models import WasteSubmission, Payment
-
 class WasteSubmissionUpdateView(APIView):
     def put(self, request, submission_id):
         # Get the waste submission object
@@ -158,7 +157,7 @@ class WasteSubmissionUpdateView(APIView):
             waste_submission.kilo = Decimal(kilo)  # Ensure proper decimal conversion
 
         # Update description
-        if description is not None:  
+        if description is not None:
             waste_submission.description = description
 
         if payment:
@@ -172,20 +171,22 @@ class WasteSubmissionUpdateView(APIView):
                     payment.cash_status = "unpaid"
                     payment.total_price = Decimal(total_price)
                     print(f"Updating Payment - Rejected, New Cash Status: {payment.cash_status}")
-
                 else:  # Otherwise, process as completed
                     payment.total_price = Decimal(total_price)  # Convert safely
                     waste_submission.status = "completed"
                     payment.cash_status = "paid"
                     print(f"Updating Payment - New Cash Status: {payment.cash_status}, Total Price: {payment.total_price}")
 
-                # Save both models
-                payment.save()
-                waste_submission.save()
+            elif payment.payment_option == "card_payment":
+                waste_submission.status = "completed"
+                print("Payment is via Card. Marking submission as Completed.")
 
-                print(f"Waste Submission Status After Save: {waste_submission.status}")
-                print(f"Payment Cash Status After Save: {payment.cash_status}")
+            # Save both models
+            payment.save()
+            waste_submission.save()
 
+            print(f"Waste Submission Status After Save: {waste_submission.status}")
+            print(f"Payment Cash Status After Save: {payment.cash_status}")
         else:
             print("No Payment Record Found for this Waste Submission.")
 
@@ -205,6 +206,7 @@ class WasteSubmissionUpdateView(APIView):
                 "total_price": str(payment.total_price) if payment else None,
             }
         }, status=status.HTTP_200_OK)
+
 
 
 from rest_framework.views import APIView

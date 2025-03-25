@@ -20,3 +20,29 @@ class RecyclerLoginSerializer(serializers.Serializer):
 
         data["recycler"] = recycler
         return data
+
+
+
+from rest_framework import serializers
+from adminapp.models import WasteThreshold
+
+class WasteThresholdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WasteThreshold
+        fields = ['limit', 'updated_at']
+from rest_framework import serializers
+from adminapp.models import WasteThreshold
+from userapp.models import WasteSubmission  # For resetting kilo values
+from decimal import Decimal
+
+class RecyclerQuotationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WasteThreshold
+        fields = ['quotation', 'status']
+
+    def update(self, instance, validated_data):
+        if validated_data.get('status') == 'collected':
+            # Reset kilo value for all submissions instead of deleting them
+            WasteSubmission.objects.update(kilo=Decimal('0.00'))
+
+        return super().update(instance, validated_data)

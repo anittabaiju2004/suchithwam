@@ -53,11 +53,15 @@ class Recycler(models.Model):
 
     def __str__(self):
         return f"{self.recycler_id} - {self.name}"
-
 from django.db import models
 
 class WasteThreshold(models.Model):
     limit = models.FloatField(default=50)  # Default 50 kg
+    quotation = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('collected', 'Collected')
+    ], default='pending')
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
