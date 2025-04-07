@@ -62,7 +62,7 @@ urlpatterns = [
     path('user/bookings/<int:user_id>/', UserBookingsView.as_view(), name='user-bookings'),
     path('reschedule/<int:submission_id>/', RescheduleWasteSubmissionView.as_view(), name='reschedule_waste'),
     path('update-payment/<int:waste_submission_id>/', UpdatePaymentView.as_view(), name='update-payment'),
-     path('user/<int:user_id>/payments/', UserPaymentHistoryView.as_view(), name='user-payment-history'),
+    path('user/<int:user_id>/payments/', UserPaymentHistoryView.as_view(), name='user-payment-history'),
      
 
 ]
